@@ -1,41 +1,12 @@
 import { toast } from "react-toastify";
-
-// Generates a random phone number
-const generateRandomPhoneNumber = (): string => {
-    const areaCode = Math.floor(Math.random() * 900) + 100; // 3 digits
-    const prefix = Math.floor(Math.random() * 900) + 100; // 3 digits
-    const lineNumber = Math.floor(Math.random() * 9000) + 1000; // 4 digits
-    return `(${areaCode}) ${prefix}-${lineNumber}`;
-};
+import { getAuthToken } from "./getAuthToken";
+import { generateRandomPhoneNumber } from "./randomGenerator";
+import { greetings } from "../constants";
 
 export const SendNotification = async (
     recipientToken: string, 
     setLoading: (loading: boolean) => void
 ): Promise<void> => {
-    const greetings = [
-        "Hello, how are you today?",
-        "Hi there! Hope you're having a great day.",
-        "Good morning! What can I do for you?",
-        "Hey! How's it going?",
-        "Greetings! How can I assist you?",
-        "Hello! Nice to see you.",
-        "Hi! What’s up?",
-        "Welcome! How may I help you today?",
-        "Hey there! Need any help?",
-        "Good evening! How are you feeling today?",
-        "Howdy! What’s new with you?",
-        "Hi! It’s great to see you.",
-        "Hello there! How’s everything?",
-        "Hey! How can I make your day better?",
-        "Greetings! What brings you here today?",
-        "Hello! What’s on your mind?",
-        "Hi there! What’s happening?",
-        "Good day! How can I support you?",
-        "Hey! Got any plans for today?",
-        "Welcome back! How’s it going?",
-        "Hello! What can I do for you right now?",
-        "Hi! How can I be of service?",
-    ];
 
     const randomIndex = Math.floor(Math.random() * greetings.length);
     const randomPhoneNumber = generateRandomPhoneNumber();
@@ -58,12 +29,10 @@ export const SendNotification = async (
     setLoading(true);
 
     try {
-        // Fetch Bearer token from backend
-        const tokenResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/token`);
-        const { token } = await tokenResponse.json();
+        let authToken = await getAuthToken();
 
-        if (!token) {
-            throw new Error('Failed to retrieve Bearer token');
+        if (!authToken) {
+            throw new Error('Failed to retrieve Bearer token please try again');
         }
 
         // Make API call to FCM
@@ -71,7 +40,7 @@ export const SendNotification = async (
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`, 
+                'Authorization': `Bearer ${authToken}`, 
             },
             body: JSON.stringify(notificationPayload),
         });

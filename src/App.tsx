@@ -10,6 +10,7 @@ import { NotificationData } from './types/notification/type';
 import NotificationBanner from './components/NotificationBanner';
 import NotificationList from './components/NotificationList';
 import { addNotificationToFirestore, fetchCollectionData, updateNotificationInFirestore } from './utils/firebaseUtils';
+import { getAuthToken } from './utils/getAuthToken';
 
 const App: React.FC = () => {
 
@@ -25,6 +26,10 @@ const App: React.FC = () => {
     } catch (error) {
       console.error(error)
     }
+  }, []);
+
+  useEffect(() => {
+    getAuthToken(); 
   }, []);
 
   useEffect(() => {
@@ -57,9 +62,6 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, [handleFetchCollectionData]);
 
-  useEffect(()=>{
-    console.log('AUTH TOKEN FROM ENCVV' ,`${import.meta.env.VITE_AUTH_TOKEN}`)
-  },[])
 
   const handleGetFirebaseToken = useCallback(() => {
     getFirebaseToken()
