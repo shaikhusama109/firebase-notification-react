@@ -14,7 +14,6 @@ dist-ssr
 *.local
 .env
 .yarn
-notification-firebase.json
 .firebaserc
 
 # Editor directories and files
