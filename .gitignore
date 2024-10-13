@@ -8,13 +8,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-public/swEnv.js
-dist
-dist-ssr
-*.local
 .env
 .yarn
-.firebaserc
 
 # Editor directories and files
 .vscode/*
