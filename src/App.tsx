@@ -57,6 +57,10 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, [handleFetchCollectionData]);
 
+  useEffect(()=>{
+    console.log('AUTH TOKEN FROM ENCVV' ,`${import.meta.env.VITE_AUTH_TOKEN}`)
+  },[])
+
   const handleGetFirebaseToken = useCallback(() => {
     getFirebaseToken()
       .then((firebaseToken) => {

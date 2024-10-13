@@ -1,14 +1,17 @@
 import { toast } from "react-toastify";
 
+// Generates a random phone number
 const generateRandomPhoneNumber = (): string => {
-    // Generates a random 10-digit phone number
     const areaCode = Math.floor(Math.random() * 900) + 100; // 3 digits
     const prefix = Math.floor(Math.random() * 900) + 100; // 3 digits
     const lineNumber = Math.floor(Math.random() * 9000) + 1000; // 4 digits
     return `(${areaCode}) ${prefix}-${lineNumber}`;
 };
 
-export const SendNotification = async (recipientToken: string, setLoading: (loading: boolean) => void): Promise<void> => {
+export const SendNotification = async (
+    recipientToken: string, 
+    setLoading: (loading: boolean) => void
+): Promise<void> => {
     const greetings = [
         "Hello, how are you today?",
         "Hi there! Hope you're having a great day.",
@@ -31,7 +34,7 @@ export const SendNotification = async (recipientToken: string, setLoading: (load
         "Hey! Got any plans for today?",
         "Welcome back! How’s it going?",
         "Hello! What can I do for you right now?",
-        "Hi! How can I be of service?"
+        "Hi! How can I be of service?",
     ];
 
     const randomIndex = Math.floor(Math.random() * greetings.length);
@@ -47,39 +50,48 @@ export const SendNotification = async (recipientToken: string, setLoading: (load
         }
     };
 
-    if (recipientToken) {
-        setLoading(true);
-        try {
-            const response = await fetch(`https://fcm.googleapis.com/v1/projects/${import.meta.env.VITE_PROJECT_ID}/messages:send`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${import.meta.env.VITE_AUTH_TOKEN}`,
-                },
-                body: JSON.stringify(notificationPayload),
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const text = await response.text();
-            try {
-                const data = JSON.parse(text); 
-                console.log('Notification sent:', data);
-            } catch (error) {
-                console.error('Response is not valid JSON:', text,error);
-
-            }
-        } catch (err) {
-            console.error('An error occurred while sending notification:', err);
-
-        }
-        finally {
-            setLoading(false);
-        }
-    }
-    else {
+    if (!recipientToken) {
         toast.error('Recipient token is missing. Please enable push notifications.');
+        return;
+    }
+
+    setLoading(true);
+
+    try {
+        // Fetch Bearer token from backend
+        const tokenResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/token`);
+        const { token } = await tokenResponse.json();
+
+        if (!token) {
+            throw new Error('Failed to retrieve Bearer token');
+        }
+
+        // Make API call to FCM
+        const response = await fetch(`https://fcm.googleapis.com/v1/projects/${import.meta.env.VITE_PROJECT_ID}/messages:send`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`, 
+            },
+            body: JSON.stringify(notificationPayload),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send notification');
+        }
+
+        const text = await response.text();
+
+        try {
+            const data = JSON.parse(text);
+            console.log('Notification sent:', data);
+        } catch (error) {
+            console.error('Response is not valid JSON:', text, error);
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        toast.error('Failed to send notification. Please try again.');
+    } finally {
+        setLoading(false);
     }
 };
